@@ -1,4 +1,4 @@
-module github.com/normanchenn/clipd/cli
+module github.com/normanchenn/clipd/clipd
 
 go 1.22.0
 

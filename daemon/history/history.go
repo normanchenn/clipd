@@ -28,7 +28,7 @@ func (history *History) AddItem(item string, time time.Time) {
 }
 
 func (history *History) GetItem(index int) *HistoryItem {
-	if index < 0 || index >= history.history.Len() {
+	if index < 0 || index >= history.history.Len()-1 {
 		return nil
 	}
 	cur := history.history.Front()
@@ -39,7 +39,7 @@ func (history *History) GetItem(index int) *HistoryItem {
 }
 
 func (history *History) GetItemRange(start int, end int) []*HistoryItem {
-	if start < 0 || start >= history.history.Len() || end < 0 || end >= history.history.Len() || start > end {
+	if start < 0 || start >= history.history.Len() || end < 0 || end >= history.history.Len()-1 || start > end {
 		return nil
 	}
 	result := make([]*HistoryItem, 0)
