@@ -2,11 +2,13 @@ package history
 
 import (
 	"container/list"
+	"sync"
 	"time"
 )
 
 type History struct {
 	history *list.List
+	sync.Mutex
 }
 
 type HistoryItem struct {
