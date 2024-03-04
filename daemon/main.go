@@ -18,6 +18,14 @@ import (
 
 var clipboard_history = history.NewHistory()
 
+const (
+	FILEPATH    = "/Users/normanchen/Desktop/clipd.log"
+	INTERVAL    = "10"
+	THRESHOLD   = "500"
+	PERMISSIONS = "0777"
+	SOCKETPATH  = "/tmp/clipd.sock"
+)
+
 func main() {
 	filepath, interval, threshold, permissions, socketpath, err := loadConfig()
 	if err != nil {
@@ -52,22 +60,12 @@ func main() {
 }
 
 func loadConfig() (string, time.Duration, int, os.FileMode, string, error) {
-	// err := godotenv.Load(".env")
-	// if err != nil {
-	// fmt.Fprintln(os.Stderr, "Error loading .env file")
-	// return "", 0, 0, 0, "", err
-	// }
-	// filepath := os.Getenv("FILEPATH")
-	// interval_str := os.Getenv("INTERVAL")
-	// threshold_str := os.Getenv("THRESHOLD")
-	// permissions_str := os.Getenv("PERMISSIONS")
-	// socketpath := os.Getenv("SOCKETPATH")
 	var err error = nil
-	filepath := "/Users/normanchen/Desktop/clipd.log"
-	interval_str := "10"
-	threshold_str := "500"
-	permissions_str := "0777"
-	socketpath := "/tmp/clipd.sock"
+	filepath := FILEPATH
+	interval_str := INTERVAL
+	threshold_str := THRESHOLD
+	permissions_str := PERMISSIONS
+	socketpath := SOCKETPATH
 	if filepath == "" || interval_str == "" || threshold_str == "" || permissions_str == "" || socketpath == "" {
 		fmt.Fprintln(os.Stderr, "Error loading .env variables")
 		return "", 0, 0, 0, "", err
