@@ -8,6 +8,7 @@ import (
 
 type History struct {
 	history *list.List
+	size    int
 	sync.Mutex
 }
 
@@ -16,20 +17,35 @@ type HistoryItem struct {
 	timestamp time.Time
 }
 
-func NewHistory() *History {
+func InitHistory() *History {
 	return &History{history: list.New()}
 }
 
-func NewHistoryItem(content string, timestamp time.Time) *HistoryItem {
+func InitHistoryItem(content string, timestamp time.Time) *HistoryItem {
 	return &HistoryItem{content: content, timestamp: timestamp}
 }
 
+func (history_item *HistoryItem) GetContent() string {
+	return history_item.content
+}
+
+func (history_item *HistoryItem) GetTimestamp() time.Time {
+	return history_item.timestamp
+}
+
 func (history *History) AddItem(item string, time time.Time) {
-	historyItem := NewHistoryItem(item, time)
+	history.Lock()
+	defer history.Unlock()
+
+	historyItem := InitHistoryItem(item, time)
 	history.history.PushFront(historyItem)
+	history.size++
 }
 
 func (history *History) GetItem(index int) *HistoryItem {
+	history.Lock()
+	defer history.Unlock()
+
 	if index < 0 || index >= history.history.Len()-1 {
 		return nil
 	}
@@ -41,6 +57,9 @@ func (history *History) GetItem(index int) *HistoryItem {
 }
 
 func (history *History) GetItemRange(start int, end int) []*HistoryItem {
+	history.Lock()
+	defer history.Unlock()
+
 	if start < 0 || start >= history.history.Len() || end < 0 || end >= history.history.Len()-1 || start > end {
 		return nil
 	}
@@ -54,12 +73,4 @@ func (history *History) GetItemRange(start int, end int) []*HistoryItem {
 		cur = cur.Next()
 	}
 	return result
-}
-
-func (history_item *HistoryItem) GetContent() string {
-	return history_item.content
-}
-
-func (history_item *HistoryItem) GetTimestamp() time.Time {
-	return history_item.timestamp
 }

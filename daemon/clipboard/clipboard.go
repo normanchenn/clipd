@@ -14,7 +14,8 @@ func GetClipboard() (string, error) {
 	return string(out), nil
 }
 
-func WriteClipboard(file *os.File, clipboard string) error {
+// TODO: will need to add identifier to create file writing and identifing
+func WriteClipboardToFile(file *os.File, clipboard string) error {
 	_, err := file.Seek(0, 2)
 	if err != nil {
 		return err

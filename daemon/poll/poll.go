@@ -27,10 +27,8 @@ func Poll(clipboard_history *history.History, filepath string, interval time.Dur
 
 		if cur != prev {
 			fmt.Println("New clipboard: ", cur)
-			clipboard_history.Lock()
 			clipboard_history.AddItem(cur, time.Now())
-			clipboard_history.Unlock()
-			err = clipboard.WriteClipboard(file, cur)
+			err = clipboard.WriteClipboardToFile(file, cur)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, "Error writing to file")
 				continue

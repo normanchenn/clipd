@@ -1,15 +1,18 @@
 package requests
 
 import (
-	"bufio"
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
-	"strconv"
-	"strings"
 
 	"github.com/normanchenn/clipd/daemon/history"
 )
+
+type Request struct {
+	Action string         `json:"action"`
+	Params map[string]int `json:"params"`
+}
 
 func HandleRequests(listener net.Listener, clipboard_history *history.History) {
 	for {
@@ -25,89 +28,52 @@ func HandleRequests(listener net.Listener, clipboard_history *history.History) {
 
 func handleRequest(conn net.Conn, clipboard_history *history.History) {
 	defer conn.Close()
-	reader := bufio.NewReader(conn)
 
-	request, err := reader.ReadString('\n')
+	var request Request
+	decoder := json.NewDecoder(conn)
+	err := decoder.Decode(&request)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error reading request: ", err)
+		fmt.Fprintln(os.Stderr, "Error decoding request: ", err)
 		return
 	}
-	request = strings.TrimSpace(request)
-	parts := strings.Fields(request)
-	if len(parts) < 1 {
-		fmt.Fprintln(os.Stderr, "Invalid request 1")
-		return
-	}
-	switch parts[0] {
+
+	reqJSON, _ := json.Marshal(request)
+	fmt.Println("Request JSON:", string(reqJSON))
+	switch request.Action {
 	case "get":
-		handleGet(conn, parts, clipboard_history)
+		handleGet(conn, request.Params, clipboard_history)
 	default:
-		fmt.Fprintf(conn, "Invalid request 2: %s", parts[0])
+		fmt.Fprintf(conn, "Invalid Request: %s", request.Action)
 	}
 }
 
-func handleGet(conn net.Conn, parts []string, clipboard_history *history.History) { // format is this: ["get", "last=10", "from=10", "to=15", "at=10"]
-	if len(parts) == 1 { // get most recent (no other args)
-		clipboard_history.Lock()
-		defer clipboard_history.Unlock()
+func handleGet(conn net.Conn, params map[string]int, clipboard_history *history.History) {
+	at_value, at_ok := params["at"]
+	last_value, last_ok := params["last"]
+	from_value, from_ok := params["from"]
+	to_value, to_ok := params["to"]
+	if len(params) == 0 { // get most recent (no args)
 		item := clipboard_history.GetItem(0)
-		printItems(conn, []*history.HistoryItem{item})
-	} else if len(parts) == 2 && strings.HasPrefix(parts[1], "at=") { // get n (at exists, last, from , to don't exist)
-		at, err := strconv.Atoi(parts[1][3:])
-		if err != nil {
-			fmt.Fprintln(conn, "Invalid request 3")
-			return
-		}
-		fmt.Fprintln(os.Stdout, "parts: ", parts)
-		fmt.Fprintln(os.Stdout, "at: ", at)
-
-		clipboard_history.Lock()
-		defer clipboard_history.Unlock()
-		item := clipboard_history.GetItem(at)
-		printItems(conn, []*history.HistoryItem{item})
-	} else if len(parts) == 2 && strings.HasPrefix(parts[1], "last=") { // get last n (last exists, at, from, to don't exist)
-		last, err := strconv.Atoi(parts[1][5:])
-		if err != nil {
-			fmt.Fprintln(conn, "Invalid request 4")
-			return
-		}
-
-		clipboard_history.Lock()
-		defer clipboard_history.Unlock()
-		items := clipboard_history.GetItemRange(0, last-1)
-		printItems(conn, items)
-	} else if len(parts) == 3 && strings.HasPrefix(parts[1], "from=") && strings.HasPrefix(parts[2], "to=") { // get from n to m (from, to exist, last, at don't exist)
-		from, err := strconv.Atoi(parts[1][5:])
-		if err != nil {
-			fmt.Fprintln(conn, "Invalid request 5")
-			return
-		}
-		to, err := strconv.Atoi(parts[2][3:])
-		if err != nil {
-			fmt.Fprintln(conn, "Invalid request 6")
-			return
-		}
-
-		clipboard_history.Lock()
-		defer clipboard_history.Unlock()
-		items := clipboard_history.GetItemRange(from, to)
-		printItems(conn, items)
+		returnItems(conn, []*history.HistoryItem{item})
+	} else if len(params) == 1 && at_ok { // get n
+		item := clipboard_history.GetItem(at_value)
+		returnItems(conn, []*history.HistoryItem{item})
+	} else if len(params) == 1 && last_ok { // get last n
+		items := clipboard_history.GetItemRange(0, last_value-1)
+		returnItems(conn, items)
+	} else if len(params) == 2 && from_ok && to_ok { // get from n to m
+		items := clipboard_history.GetItemRange(from_value, to_value)
+		returnItems(conn, items)
 	} else {
-		fmt.Fprintln(conn, "Invalid request 7")
+		fmt.Fprintln(conn, "Invalid request")
 	}
 }
 
-func printItems(conn net.Conn, items []*history.HistoryItem) {
+func returnItems(conn net.Conn, items []*history.HistoryItem) {
 	var ret string
 	for _, item := range items {
-		// fmt.Fprintln(conn, "--------------------------------")
-		fmt.Fprintln(os.Stdout, "returning item: ", item.GetContent())
-		// fmt.Fprintln(conn, item.GetContent())
-		ret += item.GetContent() + "\n"
-		// fmt.Fprintln(conn, item.GetTimestamp())
-		// fmt.Fprintln(conn, item)
+		// fmt.Fprintln(os.Stdout, item.GetContent())
+		ret += item.GetContent()
 	}
-	// if the last character is a newline, remove it
-	ret = strings.TrimRight(ret, "\n")
-	fmt.Fprintln(conn, ret)
+	fmt.Fprint(conn, ret)
 }

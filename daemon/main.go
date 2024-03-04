@@ -22,7 +22,7 @@ const (
 	SOCKETPATH  = "/tmp/clipd.sock"
 )
 
-var clipboard_history = history.NewHistory()
+var clipboard_history = history.InitHistory()
 
 func main() {
 	filepath, interval, threshold, permissions, socketpath, err := loadConfig()
@@ -62,7 +62,7 @@ func loadConfig() (string, time.Duration, int, os.FileMode, string, error) {
 	permissions_str := PERMISSIONS
 	socketpath := SOCKETPATH
 	if filepath == "" || interval_str == "" || threshold_str == "" || permissions_str == "" || socketpath == "" {
-		fmt.Fprintln(os.Stderr, "Error loading .env variables")
+		fmt.Fprintln(os.Stderr, "Error loading variables")
 		return "", 0, 0, 0, "", err
 	}
 	interval, _ := strconv.Atoi(interval_str)
