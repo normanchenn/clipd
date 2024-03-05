@@ -18,11 +18,15 @@ type HistoryItem struct {
 }
 
 func InitHistory() *History {
-	return &History{history: list.New()}
+	return &History{history: list.New(), size: 0}
 }
 
 func InitHistoryItem(content string, timestamp time.Time) *HistoryItem {
 	return &HistoryItem{content: content, timestamp: timestamp}
+}
+
+func (history *History) GetSize() int {
+	return history.size
 }
 
 func (history_item *HistoryItem) GetContent() string {

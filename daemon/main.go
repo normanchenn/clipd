@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/normanchenn/clipd/daemon/clipboard"
 	"github.com/normanchenn/clipd/daemon/history"
 	"github.com/normanchenn/clipd/daemon/poll"
 	"github.com/normanchenn/clipd/daemon/requests"
@@ -36,6 +37,11 @@ func main() {
 			fmt.Fprintln(os.Stderr, "Error removing socket file")
 			return
 		}
+	}
+
+	err = clipboard.WriteFileToClipboard(filepath, permissions, clipboard_history, threshold)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "Error loading existing file to clipboard")
 	}
 
 	signal_channel := make(chan os.Signal, 1)

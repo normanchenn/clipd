@@ -37,13 +37,12 @@ func handleRequest(conn net.Conn, clipboard_history *history.History) {
 		return
 	}
 
-	reqJSON, _ := json.Marshal(request)
-	fmt.Println("Request JSON:", string(reqJSON))
+	_, _ = json.Marshal(request)
 	switch request.Action {
 	case "get":
 		handleGet(conn, request.Params, clipboard_history)
 	default:
-		fmt.Fprintf(conn, "Invalid Request: %s", request.Action)
+		fmt.Fprintln(conn, "Invalid Request: ", request.Action)
 	}
 }
 
@@ -72,7 +71,6 @@ func handleGet(conn net.Conn, params map[string]int, clipboard_history *history.
 func returnItems(conn net.Conn, items []*history.HistoryItem) {
 	var ret string
 	for _, item := range items {
-		// fmt.Fprintln(os.Stdout, item.GetContent())
 		ret += item.GetContent()
 	}
 	fmt.Fprint(conn, ret)
