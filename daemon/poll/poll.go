@@ -10,7 +10,12 @@ import (
 )
 
 func Poll(clipboard_history *history.History, filepath string, interval time.Duration, threshold int, permissions os.FileMode) {
+	item := clipboard_history.GetItem(0)
 	prev := ""
+	if item != nil {
+		prev = item.GetContent()
+	}
+
 	for {
 		cur, err := clipboard.GetClipboard()
 		if err != nil {

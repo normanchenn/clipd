@@ -1,7 +1,6 @@
 package clipboard
 
 import (
-	"bufio"
 	"fmt"
 	"github.com/normanchenn/clipd/daemon/history"
 	"io"
@@ -38,7 +37,7 @@ func WriteClipboardToFile(filepath string, permissions os.FileMode, clipboard st
 		return err
 	}
 
-	_, err = file.WriteString(IDENTIFIER + " " + clipboard + "\n")
+	_, err = file.WriteString(IDENTIFIER + clipboard + "\n")
 	return err
 }
 
@@ -53,62 +52,34 @@ func WriteFileToClipboard(filepath string, permissions os.FileMode, clipboard *h
 	}
 	defer file.Close()
 
-	file_info, err := file.Stat()
+	content, err := io.ReadAll(file)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error seeking file")
 		return err
 	}
 
-	file_size := file_info.Size()
-	if file_size == 0 {
-		return nil
-	}
-
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanLines)
-
-	_, err = file.Seek(0, io.SeekEnd)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error seeking end")
-		return err
-	}
-
-	cur := int64(0)
-	offset := int64(0)
-
-	for scanner.Scan() {
-		line := scanner.Text()
+	cur := 0
+	lines := strings.Split(string(content), "\n")
+	for i := len(lines) - 1; i >= 0; i-- {
+		line := lines[i]
 		if strings.Contains(line, IDENTIFIER) {
-			cur = int64(file_size - offset)
+			cur = i
 			threshold--
 			if threshold == 0 {
 				break
 			}
 		}
-		offset += int64(len(line) + 1)
-		_, err := file.Seek(-offset, io.SeekEnd)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error seeking next line")
-			return err
-		}
-	}
-
-	// start from cur, and then add to the clipboard
-	_, err = file.Seek(cur, io.SeekStart)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Error seeking start")
-		return err
 	}
 
 	now := time.Now()
 	item := ""
-	for scanner.Scan() {
-		line := scanner.Text()
+	for i := cur; i < len(lines); i++ {
+		line := lines[i]
 		if strings.Contains(line, IDENTIFIER) && item == "" {
 			item += strings.TrimPrefix(line, IDENTIFIER)
 		} else if strings.Contains(line, IDENTIFIER) && item != "" {
 			clipboard.AddItem(item, now)
 			item = ""
+			item += strings.TrimPrefix(line, IDENTIFIER)
 		} else {
 			item += line
 		}
@@ -116,5 +87,6 @@ func WriteFileToClipboard(filepath string, permissions os.FileMode, clipboard *h
 	if item != "" {
 		clipboard.AddItem(item, time.Now())
 	}
+	clipboard.PrintHistory()
 	return nil
 }

@@ -71,7 +71,9 @@ func handleGet(conn net.Conn, params map[string]int, clipboard_history *history.
 func returnItems(conn net.Conn, items []*history.HistoryItem) {
 	var ret string
 	for _, item := range items {
-		ret += item.GetContent()
+		if item != nil {
+			ret += item.GetContent()
+		}
 	}
 	fmt.Fprint(conn, ret)
 }

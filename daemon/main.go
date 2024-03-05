@@ -18,7 +18,7 @@ import (
 const (
 	FILEPATH    = "/Users/normanchen/Desktop/clipd.log"
 	INTERVAL    = "10"
-	THRESHOLD   = "500"
+	THRESHOLD   = "3"
 	PERMISSIONS = "0777"
 	SOCKETPATH  = "/tmp/clipd.sock"
 )
