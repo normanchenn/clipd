@@ -2,6 +2,8 @@ package history
 
 import (
 	"container/list"
+	"fmt"
+	"os"
 	"sync"
 	"time"
 )
@@ -18,11 +20,22 @@ type HistoryItem struct {
 }
 
 func InitHistory() *History {
-	return &History{history: list.New()}
+	return &History{history: list.New(), size: 0}
 }
 
 func InitHistoryItem(content string, timestamp time.Time) *HistoryItem {
 	return &HistoryItem{content: content, timestamp: timestamp}
+}
+
+func (history *History) PrintHistory() {
+	fmt.Println(os.Stdout, "-----------------------------")
+	for i := history.history.Front(); i != nil; i = i.Next() {
+		fmt.Fprintln(os.Stdout, i.Value.(*HistoryItem).GetContent())
+	}
+	fmt.Println(os.Stdout, "-----------------------------")
+}
+func (history *History) GetSize() int {
+	return history.size
 }
 
 func (history_item *HistoryItem) GetContent() string {
@@ -46,7 +59,7 @@ func (history *History) GetItem(index int) *HistoryItem {
 	history.Lock()
 	defer history.Unlock()
 
-	if index < 0 || index >= history.history.Len()-1 {
+	if index < 0 || index > history.history.Len()-1 {
 		return nil
 	}
 	cur := history.history.Front()
@@ -60,7 +73,7 @@ func (history *History) GetItemRange(start int, end int) []*HistoryItem {
 	history.Lock()
 	defer history.Unlock()
 
-	if start < 0 || start >= history.history.Len() || end < 0 || end >= history.history.Len()-1 || start > end {
+	if start < 0 || start > history.history.Len()-1 || end < 0 || end > history.history.Len()-1 || start > end {
 		return nil
 	}
 	result := make([]*HistoryItem, 0)

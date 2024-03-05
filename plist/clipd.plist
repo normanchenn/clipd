@@ -6,7 +6,7 @@
     <string>clipd.plist</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/normanchen/Documents/clipd/daemon/daemon</string>
+        <string>/Users/normanchen/go/bin/daemon</string>
     </array>
     <key>KeepAlive</key>
     <true/>

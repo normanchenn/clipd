@@ -1,6 +1,6 @@
 cd plist
-go build
-./plist
+go install
+plist
 
 mkdir ~/Library/LaunchAgents
 cp clipd.plist ~/Library/LaunchAgents/clipd.plist
