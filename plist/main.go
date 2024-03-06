@@ -4,28 +4,32 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/user"
 	"strings"
 	"text/template"
 )
 
 type Config struct {
-	Label             string
-	ProgramArguments  string
-	StandardOutPath   string
-	StandardErrorPath string
-	Debug             bool
+	Label              string
+	ExecutablePath     string
+	StandardOutputPath string
+	StandardErrorPath  string
+	Debug              bool
 }
 
 func main() {
+	user, err := user.Current()
+	if err != nil {
+		fmt.Println("Error getting user: ", err)
+	}
+	baseDir := user.HomeDir
+
 	defaultConfig := Config{
-		Label:            "clipd.plist",
-		ProgramArguments: "/Users/normanchen/Documents/clipd/daemon/daemon",
-		// "~/go/bin/daemon"
-		StandardOutPath: "/Users/normanchen/Desktop/output2.log",
-		// "/var/log/clipd/output.log"
-		StandardErrorPath: "/Users/normanchen/Desktop/error2.log",
-		// "/var/log/clipd/error.log"
-		Debug: true,
+		Label:              "clipd.plist",
+		ExecutablePath:     baseDir + "/go/bin/daemon",
+		StandardOutputPath: baseDir + "/clipd/logs/clipd-output.log",
+		StandardErrorPath:  baseDir + "/clipd/logs/clipd-error.log",
+		Debug:              true,
 	}
 
 	config := promptConfig(defaultConfig)
@@ -38,12 +42,12 @@ func main() {
     <string>{{.Label}}</string>
     <key>ProgramArguments</key>
     <array>
-        <string>{{.ProgramArguments}}</string>
+        <string>{{.ExecutablePath}}</string>
     </array>
     <key>KeepAlive</key>
     <true/>
-    <key>StandardOutPath</key>
-    <string>{{.StandardOutPath}}</string>
+    <key>StandardOutputPath</key>
+    <string>{{.StandardOutputPath}}</string>
     <key>StandardErrorPath</key>
     <string>{{.StandardErrorPath}}</string>
     <key>Debug</key>
@@ -60,7 +64,6 @@ func main() {
 	}
 	defer file.Close()
 
-	// Execute the template with the config values and write to file
 	if err := t.Execute(file, config); err != nil {
 		fmt.Println("Error writing to file:", err)
 		return
@@ -72,9 +75,9 @@ func main() {
 func promptConfig(defaults Config) Config {
 	label := prompt("Label (default: "+defaults.Label+"): ", defaults.Label)
 
-	programArgs := prompt("Program Arguments (default: "+defaults.ProgramArguments+"): ", defaults.ProgramArguments)
+	programArgs := prompt("Executable Path (default: "+defaults.ExecutablePath+"): ", defaults.ExecutablePath)
 
-	stdOutPath := prompt("Standard Out Path (default: "+defaults.StandardOutPath+"): ", defaults.StandardOutPath)
+	stdOutPath := prompt("Standard Output Path (default: "+defaults.StandardOutputPath+"): ", defaults.StandardOutputPath)
 
 	stdErrPath := prompt("Standard Error Path (default: "+defaults.StandardErrorPath+"): ", defaults.StandardErrorPath)
 
@@ -82,11 +85,11 @@ func promptConfig(defaults Config) Config {
 	debug := strings.ToLower(debugStr) == "true"
 
 	return Config{
-		Label:             label,
-		ProgramArguments:  programArgs,
-		StandardOutPath:   stdOutPath,
-		StandardErrorPath: stdErrPath,
-		Debug:             debug,
+		Label:              label,
+		ExecutablePath:     programArgs,
+		StandardOutputPath: stdOutPath,
+		StandardErrorPath:  stdErrPath,
+		Debug:              debug,
 	}
 }
 

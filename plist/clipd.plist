@@ -10,10 +10,10 @@
     </array>
     <key>KeepAlive</key>
     <true/>
-    <key>StandardOutPath</key>
-    <string>/Users/normanchen/Desktop/output2.log</string>
+    <key>StandardOutputPath</key>
+    <string>/Users/normanchen/clipd/logs/clipd-output.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/normanchen/Desktop/error2.log</string>
+    <string>/Users/normanchen/clipd/logs/clipd-error.log</string>
     <key>Debug</key>
     <true/>
 </dict>

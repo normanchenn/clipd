@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"os/user"
 	"strconv"
 	"syscall"
 	"time"
@@ -16,9 +17,9 @@ import (
 )
 
 const (
-	FILEPATH    = "/Users/normanchen/Desktop/clipd.log"
+	FILEPATH    = "/clipd/logs/clipd.log"
 	INTERVAL    = "10"
-	THRESHOLD   = "3"
+	THRESHOLD   = "30"
 	PERMISSIONS = "0777"
 	SOCKETPATH  = "/tmp/clipd.sock"
 )
@@ -62,7 +63,13 @@ func main() {
 
 func loadConfig() (string, time.Duration, int, os.FileMode, string, error) {
 	var err error = nil
-	filepath := FILEPATH
+	user, err := user.Current()
+	if err != nil {
+		fmt.Println("Error getting user: ", err)
+		return "", 0, 0, 0, "", err
+	}
+	baseDir := user.HomeDir
+	filepath := baseDir + FILEPATH
 	interval_str := INTERVAL
 	threshold_str := THRESHOLD
 	permissions_str := PERMISSIONS

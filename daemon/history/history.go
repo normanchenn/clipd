@@ -28,12 +28,13 @@ func InitHistoryItem(content string, timestamp time.Time) *HistoryItem {
 }
 
 func (history *History) PrintHistory() {
-	fmt.Println(os.Stdout, "-----------------------------")
+	fmt.Fprintln(os.Stdout, "-----------------------------")
 	for i := history.history.Front(); i != nil; i = i.Next() {
 		fmt.Fprintln(os.Stdout, i.Value.(*HistoryItem).GetContent())
 	}
-	fmt.Println(os.Stdout, "-----------------------------")
+	fmt.Fprintln(os.Stdout, "-----------------------------")
 }
+
 func (history *History) GetSize() int {
 	return history.size
 }
