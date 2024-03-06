@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -40,7 +37,7 @@ func init() {
 	getCmd.Flags().IntP("at", "a", -1, "get the clipboard history at a specific index")
 	getCmd.Flags().IntP("last", "l", -1, "get the last n items clipboard history")
 	getCmd.Flags().IntP("from", "f", -1, "get the clipboard history from a specific index - must have --to as well")
-	getCmd.Flags().IntP("to", "t", -1, "get the clipboard history to a specific index - must be --from as well")
+	getCmd.Flags().IntP("to", "t", -1, "get the clipboard history to a specific index - must have --from as well")
 }
 
 func addParam(cmd *cobra.Command, flag string, params map[string]int) {
@@ -71,5 +68,5 @@ func sendCmd(data map[string]interface{}) {
 		fmt.Println("Error reading response: ", err)
 		return
 	}
-	fmt.Println(string(response[:n]))
+	fmt.Print(string(response[:n]))
 }

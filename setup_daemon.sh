@@ -1,10 +1,12 @@
-cd plist
+cd daemon
 go install
-plist
+cd ..
 
-mkdir ~/Library/LaunchAgents
-cp clipd.plist ~/Library/LaunchAgents/clipd.plist
+mkdir -p ~/Library/LaunchAgents
+cp plist/clipd.plist ~/Library/LaunchAgents/clipd.plist
 
 \launchctl unload ~/Library/LaunchAgents/clipd.plist
-rm /tmp/clipd.sock
+if [ -f /tmp/clipd.sock ]; then
+	rm /tmp/clipd.sock
+fi
 \launchctl load -w ~/Library/LaunchAgents/clipd.plist

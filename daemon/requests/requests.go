@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/normanchenn/clipd/daemon/history"
 )
@@ -69,11 +70,14 @@ func handleGet(conn net.Conn, params map[string]int, clipboard_history *history.
 }
 
 func returnItems(conn net.Conn, items []*history.HistoryItem) {
-	var ret string
+	ret := ""
 	for _, item := range items {
 		if item != nil {
-			ret += item.GetContent()
+			ret += item.GetContent() + "\n"
 		}
 	}
-	fmt.Fprint(conn, ret)
+	if strings.HasSuffix(ret, "\n") {
+		ret = strings.TrimRight(ret, "\n")
+	}
+	fmt.Fprintln(conn, ret)
 }
