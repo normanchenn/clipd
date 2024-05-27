@@ -1,15 +1,12 @@
 # clipd
-get macOS clipboard history from the command line
+macOS clipboard history from the command line
 ## setup
 ```bash
-# to create a plist following the prompts
-./setup_plist.sh
+./init.sh
+# additional configuration can be done in plist/config.json
 
-# to setup the daemon with the plist
-./setup_daemon.sh
-
-# to download the cli
-./setup_cli.sh
+# to restart the service
+./restart.sh
 ```
 ## usage
 ```bash
@@ -24,4 +21,7 @@ clipd get --last=5
 
 # get elements from n to m from clipboard
 clipd get --from=n --to=m
+
+# help
+clipd --help
 ```
