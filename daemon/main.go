@@ -33,6 +33,7 @@ func main() {
 		return
 	}
 
+	// delete existing socket file
 	if _, err := os.Stat(socketpath); err == nil {
 		if err := os.Remove(socketpath); err != nil {
 			fmt.Fprintln(os.Stderr, "Error removing socket file")
@@ -40,6 +41,7 @@ func main() {
 		}
 	}
 
+	// check log file and repopulate the clipboard
 	err = clipboard.WriteFileToClipboard(filepath, permissions, clipboard_history, threshold)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error loading existing file to clipboard")
@@ -57,6 +59,7 @@ func main() {
 	go poll.Poll(clipboard_history, filepath, interval, threshold, permissions)
 	go requests.HandleRequests(listener, clipboard_history)
 
+	// pause execution for terminate signal
 	<-signal_channel
 	fmt.Fprintln(os.Stdout, "Exiting")
 }

@@ -24,6 +24,7 @@ var getCmd = &cobra.Command{
 			addParam(cmd, val, params)
 		}
 
+		// add action and params to a map
 		data := map[string]interface{}{
 			"action": "get",
 			"params": params,

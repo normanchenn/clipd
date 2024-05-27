@@ -23,6 +23,7 @@ func GetClipboard() (string, error) {
 	return string(out), nil
 }
 
+// append contents to logs
 func WriteClipboardToFile(filepath string, permissions os.FileMode, clipboard string) error {
 	file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE, permissions)
 	if err != nil {
@@ -41,6 +42,7 @@ func WriteClipboardToFile(filepath string, permissions os.FileMode, clipboard st
 	return err
 }
 
+// populate clipboard from logs
 func WriteFileToClipboard(filepath string, permissions os.FileMode, clipboard *history.History, threshold int) error {
 	file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE, permissions)
 	if err != nil {

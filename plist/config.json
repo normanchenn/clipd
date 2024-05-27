@@ -1,0 +1,7 @@
+{
+    "label": "clipd.plist",
+    "executable_path": "go/bin/daemon",
+    "output_path": ".clipd/logs/output.log",
+    "error_path": ".clipd/logs/error.log",
+    "debug": true
+}
