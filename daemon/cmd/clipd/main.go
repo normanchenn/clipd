@@ -1,28 +1,28 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/normanchenn/clipd/daemon/internal/config"
 	"github.com/normanchenn/clipd/daemon/internal/logging"
+	"github.com/normanchenn/clipd/daemon/internal/store"
 )
 
 func main() {
 	config, err := config.LoadConfig()
 	if err != nil {
-		// TODO: log
-		fmt.Println("error with loading config")
-		panic("")
+		log.Fatalf("cannot load config: %v", err)
 	}
 
-	logger, err := logging.NewLogLogger(config)
+	logger, err := logging.NewFileLogger(config)
 	if err != nil {
-		// TODO: log
-		fmt.Println("error with loading logger")
-		panic("")
+		log.Fatalf("cannot create logger: %v", err)
 	}
 	defer logger.Close()
-	// logger.Info("testing info")
-	// logger.Error("testing error", nil)
-	// logger.Debug("testing debug")
+	logger.Info("NEW INVOCATION")
+	logger.Debug("file logger started successfully")
+
+	storage := store.NewMemoryStore(config)
+	defer storage.Close()
+	logger.Debug("memory store started successfully")
 }

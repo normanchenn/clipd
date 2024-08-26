@@ -1,18 +1,20 @@
 package logging
 
 import (
-	"github.com/normanchenn/clipd/daemon/internal/config"
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
+
+	"github.com/normanchenn/clipd/daemon/internal/config"
 )
 
-type LogLogger struct {
+type FileLogger struct {
 	logger  *slog.Logger
 	logFile *os.File
 }
 
-func NewLogLogger(config *config.Config) (*LogLogger, error) {
+func NewFileLogger(config *config.Config) (*FileLogger, error) {
 	err := os.MkdirAll(filepath.Dir(config.LogPath), 0755)
 	if err != nil {
 		return nil, err
@@ -27,25 +29,26 @@ func NewLogLogger(config *config.Config) (*LogLogger, error) {
 	}
 	logger := slog.New(slog.NewTextHandler(logFile, options))
 
-	return &LogLogger{
+	return &FileLogger{
 		logger:  logger,
 		logFile: logFile,
 	}, nil
 }
 
-func (l *LogLogger) Info(msg string, kvp ...interface{}) {
+func (l *FileLogger) Info(msg string, kvp ...interface{}) {
 	l.logger.Info(msg, kvp...)
 }
 
-func (l *LogLogger) Error(msg string, err error, kvp ...interface{}) {
+func (l *FileLogger) Error(msg string, err error, kvp ...interface{}) {
 	l.logger.Error(msg, append(kvp, "error", err)...)
 }
 
-func (l *LogLogger) Debug(msg string, kvp ...interface{}) {
+func (l *FileLogger) Debug(msg string, kvp ...interface{}) {
 	l.logger.Debug(msg, kvp...)
+	fmt.Println(msg)
 }
 
-func (l *LogLogger) Close() error {
+func (l *FileLogger) Close() error {
 	if l.logFile != nil {
 		return l.logFile.Close()
 	}
