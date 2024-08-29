@@ -1,4 +1,4 @@
-name: Build
+name: clipd
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - '**'
 
 jobs:
-  build:
+  clipd:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,9 +23,12 @@ jobs:
 
       - name: Install dependencies
         run: go mod tidy
+        working-directory: ./daemon
 
       - name: Build
         run: go build -v ./...
+        working-directory: ./daemon
 
       - name: Run tests
         run: go test -v ./...
+        working-directory: ./daemon
