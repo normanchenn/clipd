@@ -9,6 +9,7 @@ type Config struct {
 	// constant settings
 	LogPath    string `toml:"-"`
 	SocketPath string `toml:"-"`
+	StoreDir   string `toml:"-"`
 }
 
 type LogLevel string

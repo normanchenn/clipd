@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/normanchenn/clipd/daemon/internal/config"
+	"github.com/normanchenn/clipd/daemon/internal/logging"
 	"github.com/normanchenn/clipd/daemon/internal/store"
 )
 
@@ -71,8 +72,11 @@ func assertError(t *testing.T, err error, expectError bool) {
 }
 
 func TestMemoryStore_GetEntryByIndex_Basic(t *testing.T) {
-	config := &config.Config{CacheSize: 5}
-	storage := store.NewMemoryStore(config)
+	config, _ := config.LoadConfig()
+	config.CacheSize = 5
+	logger, _ := logging.NewFileLogger(config)
+	defer logger.Close()
+	storage := store.NewMemoryStore(config, logger)
 	defer storage.Close()
 
 	entries := []store.Entry{
@@ -107,8 +111,11 @@ func TestMemoryStore_GetEntryByIndex_Basic(t *testing.T) {
 }
 
 func TestMemoryStore_GetEntryByIndex_CacheLimit(t *testing.T) {
-	config := &config.Config{CacheSize: 2}
-	storage := store.NewMemoryStore(config)
+	config, _ := config.LoadConfig()
+	config.CacheSize = 2
+	logger, _ := logging.NewFileLogger(config)
+	defer logger.Close()
+	storage := store.NewMemoryStore(config, logger)
 	defer storage.Close()
 
 	entries := []store.Entry{
@@ -142,8 +149,11 @@ func TestMemoryStore_GetEntryByIndex_CacheLimit(t *testing.T) {
 }
 
 func TestMemoryStore_GetEntryByIndex_EmptyCache(t *testing.T) {
-	config := &config.Config{CacheSize: 2}
-	storage := store.NewMemoryStore(config)
+	config, _ := config.LoadConfig()
+	config.CacheSize = 2
+	logger, _ := logging.NewFileLogger(config)
+	defer logger.Close()
+	storage := store.NewMemoryStore(config, logger)
 	defer storage.Close()
 
 	tests := []struct {
@@ -166,8 +176,11 @@ func TestMemoryStore_GetEntryByIndex_EmptyCache(t *testing.T) {
 }
 
 func TestMemoryStore_GetEntryByID_Basic(t *testing.T) {
-	config := &config.Config{CacheSize: 2}
-	storage := store.NewMemoryStore(config)
+	config, _ := config.LoadConfig()
+	config.CacheSize = 2
+	logger, _ := logging.NewFileLogger(config)
+	defer logger.Close()
+	storage := store.NewMemoryStore(config, logger)
 	defer storage.Close()
 
 	entry := store.NewEntry("first", []string{})
@@ -194,8 +207,11 @@ func TestMemoryStore_GetEntryByID_Basic(t *testing.T) {
 }
 
 func TestMemoryStore_GetAllEntries_Basic(t *testing.T) {
-	config := &config.Config{CacheSize: 5}
-	storage := store.NewMemoryStore(config)
+	config, _ := config.LoadConfig()
+	config.CacheSize = 5
+	logger, _ := logging.NewFileLogger(config)
+	defer logger.Close()
+	storage := store.NewMemoryStore(config, logger)
 	defer storage.Close()
 
 	entries := []store.Entry{
@@ -219,8 +235,11 @@ func TestMemoryStore_GetAllEntries_Basic(t *testing.T) {
 }
 
 func TestMemoryStore_GetAllEntries_CacheLimit(t *testing.T) {
-	config := &config.Config{CacheSize: 2}
-	storage := store.NewMemoryStore(config)
+	config, _ := config.LoadConfig()
+	config.CacheSize = 2
+	logger, _ := logging.NewFileLogger(config)
+	defer logger.Close()
+	storage := store.NewMemoryStore(config, logger)
 	defer storage.Close()
 
 	entries := []store.Entry{
@@ -244,8 +263,11 @@ func TestMemoryStore_GetAllEntries_CacheLimit(t *testing.T) {
 }
 
 func TestMemoryStore_GetEntryRange_Basic(t *testing.T) {
-	config := &config.Config{CacheSize: 5}
-	storage := store.NewMemoryStore(config)
+	config, _ := config.LoadConfig()
+	config.CacheSize = 5
+	logger, _ := logging.NewFileLogger(config)
+	defer logger.Close()
+	storage := store.NewMemoryStore(config, logger)
 	defer storage.Close()
 
 	entries := []store.Entry{
@@ -285,8 +307,11 @@ func TestMemoryStore_GetEntryRange_Basic(t *testing.T) {
 }
 
 func TestMemoryStore_Clear_Basic(t *testing.T) {
-	config := &config.Config{CacheSize: 10}
-	storage := store.NewMemoryStore(config)
+	config, _ := config.LoadConfig()
+	config.CacheSize = 10
+	logger, _ := logging.NewFileLogger(config)
+	defer logger.Close()
+	storage := store.NewMemoryStore(config, logger)
 	defer storage.Close()
 
 	entries := []store.Entry{
@@ -322,8 +347,11 @@ func TestMemoryStore_Clear_Basic(t *testing.T) {
 }
 
 func TestMemoryStore_Size_Basic(t *testing.T) {
-	config := &config.Config{CacheSize: 10}
-	storage := store.NewMemoryStore(config)
+	config, _ := config.LoadConfig()
+	config.CacheSize = 10
+	logger, _ := logging.NewFileLogger(config)
+	defer logger.Close()
+	storage := store.NewMemoryStore(config, logger)
 	defer storage.Close()
 
 	entries := []store.Entry{

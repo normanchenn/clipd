@@ -22,7 +22,7 @@ func main() {
 	logger.Info("NEW INVOCATION")
 	logger.Debug("file logger started successfully")
 
-	storage := store.NewMemoryStore(config)
+	storage := store.NewMemoryStore(config, logger)
 	defer storage.Close()
 	logger.Debug("memory store started successfully")
 }

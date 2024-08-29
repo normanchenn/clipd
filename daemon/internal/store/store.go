@@ -7,10 +7,10 @@ import (
 )
 
 type Entry struct {
-	ID        string
-	CreatedAt time.Time
-	Data      string
-	Tags      []string
+	ID        string    `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	Data      string    `json:"data"`
+	Tags      []string  `json:"tags"`
 }
 
 func NewEntry(data string, tags []string) Entry {

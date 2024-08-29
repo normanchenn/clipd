@@ -6,6 +6,8 @@ import (
 
 	"github.com/emirpasic/gods/trees/redblacktree"
 	"github.com/normanchenn/clipd/daemon/internal/config"
+	"github.com/normanchenn/clipd/daemon/internal/errors"
+	"github.com/normanchenn/clipd/daemon/internal/logging"
 )
 
 type MemoryStore struct {
@@ -15,15 +17,17 @@ type MemoryStore struct {
 	first   *redblacktree.Node
 	limit   int
 	counter int
+	logger  logging.Logger
 }
 
-func NewMemoryStore(config *config.Config) *MemoryStore {
+func NewMemoryStore(config *config.Config, logger logging.Logger) *MemoryStore {
 	tree := redblacktree.NewWithIntComparator()
 	return &MemoryStore{
 		tree:    *tree,
 		idMap:   make(map[string]*redblacktree.Node),
 		limit:   config.CacheSize,
 		counter: 0,
+		logger:  logger,
 	}
 }
 
@@ -51,7 +55,7 @@ func (m *MemoryStore) GetEntryByIndex(index int) (Entry, error) {
 
 	if index == 0 {
 		if m.first == nil {
-			return Entry{}, fmt.Errorf("found nothing")
+			return Entry{}, fmt.Errorf("request when cache is empty: %w", errors.ErrNotFound)
 		}
 		return m.first.Value.(Entry), nil
 	}
@@ -61,7 +65,7 @@ func (m *MemoryStore) GetEntryByIndex(index int) (Entry, error) {
 	if found {
 		return entry.(Entry), nil
 	}
-	return Entry{}, fmt.Errorf("found nothing")
+	return Entry{}, errors.ErrNotFound
 }
 
 func (m *MemoryStore) GetEntryByID(id string) (Entry, error) {
@@ -70,8 +74,7 @@ func (m *MemoryStore) GetEntryByID(id string) (Entry, error) {
 
 	var entry, found = m.idMap[id]
 	if !found {
-		return Entry{}, fmt.Errorf("found nothing")
-
+		return Entry{}, errors.ErrNotFound
 	}
 	return entry.Value.(Entry), nil
 }
@@ -95,7 +98,7 @@ func (m *MemoryStore) GetEntryRange(start_index int, end_index int) ([]Entry, er
 	var start_key = -m.counter + start_index + 1
 	var entry = m.tree.GetNode(start_key)
 	if entry == nil {
-		return []Entry{}, fmt.Errorf("found nothing")
+		return []Entry{}, errors.ErrNotFound
 	}
 
 	var entries []Entry
@@ -110,7 +113,7 @@ func (m *MemoryStore) GetEntryRange(start_index int, end_index int) ([]Entry, er
 	}
 
 	if len(entries) < end_index-start_index+1 {
-		return entries, fmt.Errorf("end index out of bounds")
+		return entries, fmt.Errorf("end index out of bounds: %w", errors.ErrOutOfBounds)
 	}
 	return entries, nil
 }
