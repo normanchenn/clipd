@@ -19,10 +19,15 @@ func main() {
 		log.Fatalf("cannot create logger: %v", err)
 	}
 	defer logger.Close()
-	logger.Info("NEW INVOCATION")
+	logger.Info("CLIPD STARTED")
 	logger.Debug("file logger started successfully")
 
 	storage := store.NewMemoryStore(config, logger)
 	defer storage.Close()
 	logger.Debug("memory store started successfully")
+
+	// server
+	// polling
+	// request handling
+	// clipboard
 }
