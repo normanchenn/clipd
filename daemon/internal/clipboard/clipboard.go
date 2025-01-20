@@ -2,29 +2,18 @@ package clipboard
 
 import (
 	"bytes"
+	"fmt"
 	"os/exec"
-
-	"github.com/normanchenn/clipd/daemon/internal/logging"
 )
 
-type Clipboard struct {
-	logger logging.Logger
-}
-
-func NewClipboard(logger logging.Logger) *Clipboard {
-	return &Clipboard{
-		logger: logger,
-	}
-}
-
-func (c *Clipboard) GetCurrentClipboard() (string, error) {
-	// macos only for now
+func Get() (string, error) {
 	cmd := exec.Command("pbpaste")
+
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	err := cmd.Run()
-	if err != nil {
-		return "", err
+
+	if err := cmd.Run(); err != nil {
+		return "", fmt.Errorf("failed to get clipboard content: %w", err)
 	}
 	return out.String(), nil
 }

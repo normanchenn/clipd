@@ -1,94 +1,125 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
 
-	"github.com/BurntSushi/toml"
-	"github.com/normanchenn/clipd/daemon/internal/errors"
+	"github.com/goccy/go-yaml"
 )
 
-func (c *Config) validate() error {
-	if c.PollingInterval <= 0 {
-		return fmt.Errorf("polling interval %d: %w", c.PollingInterval, errors.ErrInvalidConfiguration)
-	}
+const (
+	LogLevelDebug LogLevel = "debug"
+	LogLevelInfo  LogLevel = "info"
+	LogLevelError LogLevel = "error"
+)
 
-	if c.CacheSize <= 0 {
-		return fmt.Errorf("cache size %d: %w", c.CacheSize, errors.ErrInvalidConfiguration)
-	}
+var (
+	ErrNoHomeDirectory     = errors.New("no home directory to get config path")
+	ErrInvalidPollInterval = errors.New("poll interval must be larger than 0")
+	ErrInvalidCacheSize    = errors.New("cache size must be larger than 0")
+	ErrInvalidLogLevel     = errors.New("log level must be one of debug, info, and error")
+)
 
-	if err := validateLogLevel(c.LogLevel); err != nil {
-		return err
-	}
-	return nil
+type Config struct {
+	PollInterval int      `yaml:"poll_interval"`
+	CacheSize    int      `yaml:"cache_size"`
+	LogLevel     LogLevel `yaml:"log_level"`
+
+	LogPath    string `yaml:"-"`
+	SocketPath string `yaml:"-"`
+	DbPath     string `yaml:"-"`
 }
 
-func (c *Config) setDefaults(homeDir string) {
-	if c.PollingInterval == 0 {
-		c.PollingInterval = 10
+type LogLevel string
+
+// TODO: figure out sane defaults
+func NewDefaultConfig(homeDir string) Config {
+	return Config{
+		PollInterval: 500,
+		CacheSize:    1000,
+		LogLevel:     LogLevelDebug,
+		LogPath:      filepath.Join(homeDir, "clipd", "clipd.log"),
+		SocketPath:   filepath.Join("/", "tmp", "clipd.sock"),
+		DbPath:       filepath.Join(homeDir, "clipd", "db.sqlite3"),
 	}
-	if c.CacheSize == 0 {
-		c.CacheSize = 50
-	}
-	if c.LogLevel == "" {
-		c.LogLevel = "debug"
+}
+
+func NewConfig() (Config, error) {
+	homeDir, err := getHomeDir()
+	if err != nil {
+		return Config{}, err
 	}
 
-	c.LogPath = filepath.Join(homeDir, "log", "clipd", "clipd.log")
-	c.SocketPath = filepath.Join("/", "tmp", "clipd.sock")
-	c.StoreDir = filepath.Join(homeDir, "log", "clipd", "store")
+	config := NewDefaultConfig(homeDir)
+	configPath, _ := getConfigPath(homeDir)
+	if configPath == "" {
+		return config, nil
+	}
+
+	file, err := os.ReadFile(configPath)
+	if err != nil {
+		return config, fmt.Errorf("couldn't read config file: %w", err)
+	}
+	err = yaml.Unmarshal(file, &config)
+	if err != nil {
+		return config, fmt.Errorf("unmarshalling config file: %w", err)
+	}
+
+	err = config.validate()
+	if err != nil {
+		return config, fmt.Errorf("invalid config file: %w", err)
+	}
+	return config, nil
+}
+
+func getHomeDir() (string, error) {
+	user, err := user.Current()
+	if err != nil {
+		return "", err
+	} else if user.HomeDir == "" {
+		return "", ErrNoHomeDirectory
+	}
+	return user.HomeDir, nil
 }
 
 func getConfigPath(homeDir string) (string, error) {
 	paths := []string{
-		filepath.Join(homeDir, ".config", "clipd", "clipd.toml"),
-		filepath.Join(homeDir, ".clipd.toml"),
+		filepath.Join(homeDir, ".config", "clipd", "clipd.yaml"),
+		filepath.Join(homeDir, ".clipd.yaml"),
 	}
+
 	for _, path := range paths {
 		_, err := os.Stat(path)
 		if err == nil {
 			return path, nil
 		}
 	}
-
 	return "", nil
 }
 
-func LoadConfig() (*Config, error) {
-	user, err := user.Current()
-	if err != nil {
-		return nil, err
+func (c Config) validate() error {
+	if c.PollInterval <= 0 {
+		return ErrInvalidPollInterval
 	}
 
-	configPath, err := getConfigPath(user.HomeDir)
-	if err != nil {
-		return nil, err
+	if c.CacheSize <= 0 {
+		return ErrInvalidCacheSize
 	}
 
-	var config Config
-	if configPath != "" {
-		_, err = toml.DecodeFile(configPath, &config)
-		if err != nil {
-			return nil, err
-		}
+	if !isValidLogLevel(c.LogLevel) {
+		return ErrInvalidLogLevel
 	}
-
-	config.setDefaults(user.HomeDir)
-	err = config.validate()
-	if err != nil {
-		return nil, err
-	}
-
-	return &config, nil
+	return nil
 }
 
-func validateLogLevel(level LogLevel) error {
+func isValidLogLevel(level LogLevel) bool {
 	switch level {
 	case LogLevelDebug, LogLevelInfo, LogLevelError:
-		return nil
+		return true
 	default:
-		return fmt.Errorf("log level %s: %w", level, errors.ErrInvalidConfiguration)
+		return false
 	}
 }
